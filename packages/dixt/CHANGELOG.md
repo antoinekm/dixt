@@ -1,5 +1,15 @@
 # dixt
 
+## 2.2.0
+
+### Minor Changes
+
+- 1776fc2: Add automatic plugin version checking at startup
+
+  - Check for outdated dixt plugins using npm outdated
+  - Display warnings for plugins that have updates available
+  - Suggest running npm update when outdated plugins are detected
+
 ## 2.1.11
 
 ### Patch Changes
