@@ -1,6 +1,6 @@
 {
   "name": "dixt-plugin-roles",
-  "version": "1.0.7",
+  "version": "3.0.0",
   "description": "Discord bot framework - roles plugin",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -19,6 +19,6 @@
   },
   "peerDependencies": {
     "discord.js": "^14.9.0",
-    "dixt": "^2.2.1"
+    "dixt": "^3.0.0"
   }
 }

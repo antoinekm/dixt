@@ -1,5 +1,12 @@
 # dixt-plugin-logs
 
+## 3.0.0
+
+### Patch Changes
+
+- Updated dependencies [f499068]
+  - dixt@3.0.0
+
 ## 2.1.18
 
 ### Patch Changes
