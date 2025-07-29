@@ -11,6 +11,7 @@ import dixtPluginWorktime from "dixt-plugin-worktime";
 
 import dixtPluginAffixOptions from "./options/affix";
 import dixtPluginJoinOptions from "./options/join";
+import dixtPluginPresenceOptions from "./options/presence";
 import dixtPluginReactOptions from "./options/react";
 import dixtPluginReportsOptions from "./options/reports";
 import dixtPluginRolesOptions from "./options/roles";
@@ -25,7 +26,7 @@ const main = async () => {
     },
     plugins: [
       dixtPluginLogs,
-      dixtPluginPresence,
+      [dixtPluginPresence, dixtPluginPresenceOptions],
       [dixtPluginAffix, dixtPluginAffixOptions],
       [dixtPluginJoin, dixtPluginJoinOptions],
       [dixtPluginReact, dixtPluginReactOptions],

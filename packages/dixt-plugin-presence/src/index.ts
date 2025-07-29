@@ -1,11 +1,13 @@
 import { ActivityType, PresenceData } from "discord.js";
-import { DixtPlugin, merge } from "dixt";
+import { DixtPlugin } from "dixt";
 
 import { name } from "../package.json";
 
+type DynamicPresenceData = PresenceData | (() => PresenceData);
+
 export type DixtPluginPresenceOptions = {
   interval?: number;
-  presences?: PresenceData[];
+  presences?: DynamicPresenceData[];
 };
 
 export const optionsDefaults = {
@@ -36,7 +38,11 @@ const DixtPluginPresence: DixtPlugin = (
   instance,
   optionsValue?: DixtPluginPresenceOptions,
 ) => {
-  const options = merge({}, optionsDefaults, optionsValue);
+  const options = {
+    ...optionsDefaults,
+    ...optionsValue,
+    ...(optionsValue?.presences && { presences: optionsValue.presences }),
+  };
 
   let presenceIndex = 0;
 
@@ -44,9 +50,13 @@ const DixtPluginPresence: DixtPlugin = (
     // every 15 seconds it will change the activity
     setInterval(
       async () => {
-        await instance.client.user?.setPresence(
-          options.presences[presenceIndex] as PresenceData,
-        );
+        const currentPresence = options.presences[presenceIndex];
+        const presence =
+          typeof currentPresence === "function"
+            ? currentPresence()
+            : currentPresence;
+
+        instance.client.user?.setPresence(presence as PresenceData);
 
         presenceIndex =
           presenceIndex === options.presences.length - 1
