@@ -1,6 +1,6 @@
 {
   "name": "dixt-plugin-twitch",
-  "version": "1.1.18",
+  "version": "3.0.0",
   "description": "Discord bot framework - twitch plugin",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -19,6 +19,6 @@
   },
   "peerDependencies": {
     "discord.js": "^14.9.0",
-    "dixt": "^2.2.1"
+    "dixt": "^3.0.0"
   }
 }

@@ -19,6 +19,6 @@
   },
   "peerDependencies": {
     "discord.js": "^14.9.0",
-    "dixt": "^2.2.1"
+    "dixt": "^3.0.0"
   }
 }

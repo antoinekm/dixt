@@ -1,5 +1,12 @@
 # dixt-plugin-roles
 
+## 3.0.0
+
+### Patch Changes
+
+- Updated dependencies [f499068]
+  - dixt@3.0.0
+
 ## 1.0.7
 
 ### Patch Changes
