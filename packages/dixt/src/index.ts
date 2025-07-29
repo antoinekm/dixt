@@ -1,9 +1,11 @@
+import { exec } from "child_process";
 import { Client, Events, GatewayIntentBits, type Options } from "discord.js";
 import dotenv from "dotenv-flow";
 import EventEmiter from "events";
 import { merge } from "lodash";
 import mongoose, { type Mongoose } from "mongoose";
 import process from "process";
+import { promisify } from "util";
 
 import type { DixtClient, DixtSlashCommandBuilder } from "./types";
 import Log from "./utils/log";
@@ -75,6 +77,39 @@ class dixt {
   public static database: Mongoose = mongoose;
   public static events = new EventEmiter();
 
+  private async checkPluginVersions() {
+    const execAsync = promisify(exec);
+
+    try {
+      Log.wait("checking plugin versions");
+      const { stdout } = await execAsync("npm outdated --json", {
+        cwd: process.cwd(),
+      });
+
+      if (stdout.trim()) {
+        const outdated = JSON.parse(stdout);
+        const outdatedPlugins = Object.keys(outdated).filter((pkg) =>
+          pkg.startsWith("dixt-plugin-"),
+        );
+
+        if (outdatedPlugins.length > 0) {
+          Log.warn("outdated plugins detected:");
+          outdatedPlugins.forEach((plugin) => {
+            const info = outdated[plugin];
+            Log.warn(`  ${plugin}: ${info.current} → ${info.wanted}`);
+          });
+          Log.warn("consider running: npm update");
+        } else {
+          Log.info("all plugins are up to date");
+        }
+      } else {
+        Log.info("all plugins are up to date");
+      }
+    } catch (error) {
+      Log.warn("could not check plugin versions");
+    }
+  }
+
   constructor(public options: DixtOptions = dixtDefaults) {
     this.client = new Client(
       merge({}, dixtDefaults.clientOptions, options.clientOptions),
@@ -92,6 +127,8 @@ class dixt {
         node_env: process.env.NODE_ENV,
       })
       .forEach((file: string) => Log.info(`loaded env from ${file}`));
+
+    await this.checkPluginVersions();
 
     if (!this.application?.id || !this.application?.bot?.token) {
       Log.error("missing discord application id or bot token");
