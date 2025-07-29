@@ -2,8 +2,10 @@ import { exec } from "child_process";
 import { Client, Events, GatewayIntentBits, type Options } from "discord.js";
 import dotenv from "dotenv-flow";
 import EventEmiter from "events";
+import fs from "fs";
 import { merge } from "lodash";
 import mongoose, { type Mongoose } from "mongoose";
+import path from "path";
 import process from "process";
 import { promisify } from "util";
 
@@ -37,6 +39,8 @@ export type DixtOptions = {
     };
   };
   plugins?: (DixtPlugin | [DixtPlugin, object])[];
+  autoDiscoverPlugins?: boolean;
+  pluginOptionsPath?: string;
   databaseUri?: string;
   messages?: {
     error?: {
@@ -58,6 +62,8 @@ export const dixtDefaults = {
     },
   },
   plugins: [],
+  autoDiscoverPlugins: true,
+  pluginOptionsPath: "options",
   databaseUri: process.env.DIXT_DATABASE_URI || "",
   messages: {
     error: {
@@ -71,6 +77,8 @@ class dixt {
   public client: DixtClient;
   public application: DixtOptions["application"];
   public plugins: DixtOptions["plugins"];
+  public autoDiscoverPlugins: DixtOptions["autoDiscoverPlugins"];
+  public pluginOptionsPath: DixtOptions["pluginOptionsPath"];
   public databaseUri: DixtOptions["databaseUri"];
   public messages: DixtOptions["messages"];
 
@@ -102,6 +110,105 @@ class dixt {
     } catch {
       return [];
     }
+  }
+
+  private async discoverPlugins(): Promise<
+    (DixtPlugin | [DixtPlugin, object])[]
+  > {
+    const discoveredPlugins: (DixtPlugin | [DixtPlugin, object])[] = [];
+
+    try {
+      const packageJsonPath = path.join(process.cwd(), "package.json");
+
+      if (!fs.existsSync(packageJsonPath)) {
+        Log.warn("package.json not found, skipping plugin discovery");
+        return discoveredPlugins;
+      }
+
+      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+      const dependencies = {
+        ...packageJson.dependencies,
+        ...packageJson.devDependencies,
+      };
+
+      const pluginNames = Object.keys(dependencies).filter((name) =>
+        name.startsWith("dixt-plugin-"),
+      );
+
+      Log.info(`discovered ${pluginNames.length} plugins:`);
+
+      for (const pluginName of pluginNames) {
+        try {
+          let pluginModule;
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            pluginModule = require(pluginName);
+          } catch {
+            // Try resolving from workspace packages
+            const workspacePluginPath = path.resolve(
+              process.cwd(),
+              "..",
+              "packages",
+              pluginName,
+              "dist",
+              "index.js",
+            );
+            if (fs.existsSync(workspacePluginPath)) {
+              // eslint-disable-next-line @typescript-eslint/no-var-requires
+              pluginModule = require(workspacePluginPath);
+            } else {
+              throw new Error(`Cannot find module '${pluginName}'`);
+            }
+          }
+          const plugin = pluginModule.default || pluginModule;
+
+          let optionsPath = path.join(
+            process.cwd(),
+            this.pluginOptionsPath!,
+            pluginName.replace("dixt-plugin-", ""),
+          );
+
+          // Fallback to src/options if options doesn't exist
+          if (
+            !fs.existsSync(`${optionsPath}.ts`) &&
+            !fs.existsSync(`${optionsPath}.js`) &&
+            this.pluginOptionsPath === "options"
+          ) {
+            optionsPath = path.join(
+              process.cwd(),
+              "src",
+              "options",
+              pluginName.replace("dixt-plugin-", ""),
+            );
+          }
+
+          if (
+            fs.existsSync(`${optionsPath}.ts`) ||
+            fs.existsSync(`${optionsPath}.js`)
+          ) {
+            try {
+              // eslint-disable-next-line @typescript-eslint/no-var-requires
+              const optionsModule = require(optionsPath);
+              const options = optionsModule.default || optionsModule;
+              discoveredPlugins.push([plugin, options]);
+              Log.info(`discovered plugin ${pluginName} with options`);
+            } catch {
+              discoveredPlugins.push(plugin);
+              Log.info(`discovered plugin ${pluginName} without options`);
+            }
+          } else {
+            discoveredPlugins.push(plugin);
+            Log.info(`discovered plugin ${pluginName} without options`);
+          }
+        } catch (error) {
+          Log.warn(`failed to load plugin ${pluginName}: ${error}`);
+        }
+      }
+    } catch (error) {
+      Log.error("failed to discover plugins:", error);
+    }
+
+    return discoveredPlugins;
   }
 
   private async checkPluginVersions() {
@@ -153,6 +260,10 @@ class dixt {
     );
     this.application = merge({}, dixtDefaults.application, options.application);
     this.plugins = options.plugins || [];
+    this.autoDiscoverPlugins =
+      options.autoDiscoverPlugins ?? dixtDefaults.autoDiscoverPlugins;
+    this.pluginOptionsPath =
+      options.pluginOptionsPath || dixtDefaults.pluginOptionsPath;
     this.databaseUri = options.databaseUri || dixtDefaults.databaseUri;
     this.messages = merge({}, dixtDefaults.messages, options.messages);
   }
@@ -184,11 +295,19 @@ class dixt {
       }
     }
 
-    if (!this.plugins || this.plugins.length === 0) {
+    let pluginsToLoad = this.plugins || [];
+
+    if (this.autoDiscoverPlugins) {
+      Log.wait("discovering plugins");
+      const discoveredPlugins = await this.discoverPlugins();
+      pluginsToLoad = [...pluginsToLoad, ...discoveredPlugins];
+    }
+
+    if (pluginsToLoad.length === 0) {
       Log.info("skipping plugin loading, no plugins found");
     } else {
       Log.wait("loading plugins");
-      this.plugins.forEach(async (plugin) => {
+      pluginsToLoad.forEach(async (plugin) => {
         if (Array.isArray(plugin)) {
           const [pluginModule, pluginOptions] = plugin;
           const { name: pluginName } = await pluginModule(this, pluginOptions);
