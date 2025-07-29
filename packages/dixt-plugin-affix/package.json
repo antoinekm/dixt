@@ -1,6 +1,6 @@
 {
   "name": "dixt-plugin-affix",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Discord bot framework - presence plugin",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -16,6 +16,6 @@
   },
   "peerDependencies": {
     "discord.js": "^14.9.0",
-    "dixt": "^2.1.12"
+    "dixt": "^2.2.1"
   }
 }
