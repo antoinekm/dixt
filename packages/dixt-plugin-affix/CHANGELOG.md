@@ -1,5 +1,12 @@
 # dixt-plugin-affix
 
+## 1.0.10
+
+### Patch Changes
+
+- Updated dependencies [1969509]
+  - dixt@2.2.1
+
 ## 1.0.9
 
 ### Patch Changes

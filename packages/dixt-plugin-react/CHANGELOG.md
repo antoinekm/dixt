@@ -1,5 +1,12 @@
 # dixt-plugin-react
 
+## 2.1.13
+
+### Patch Changes
+
+- Updated dependencies [1969509]
+  - dixt@2.2.1
+
 ## 2.1.12
 
 ### Patch Changes
