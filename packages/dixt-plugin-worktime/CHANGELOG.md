@@ -1,5 +1,12 @@
 # dixt-plugin-worktime
 
+## 2.2.1
+
+### Patch Changes
+
+- Updated dependencies [1969509]
+  - dixt@2.2.1
+
 ## 2.2.0
 
 ### Minor Changes

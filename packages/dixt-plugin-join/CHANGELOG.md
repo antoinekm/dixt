@@ -1,5 +1,12 @@
 # dixt-plugin-join
 
+## 2.1.14
+
+### Patch Changes
+
+- Updated dependencies [1969509]
+  - dixt@2.2.1
+
 ## 2.1.13
 
 ### Patch Changes
