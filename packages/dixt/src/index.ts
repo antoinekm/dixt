@@ -77,6 +77,33 @@ class dixt {
   public static database: Mongoose = mongoose;
   public static events = new EventEmiter();
 
+  private isExecError(
+    error: unknown,
+  ): error is { code: number; stdout: string } {
+    return (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      "stdout" in error &&
+      typeof (error as Record<string, unknown>).stdout === "string"
+    );
+  }
+
+  private parseOutdatedPlugins(stdout: string) {
+    try {
+      const outdated = JSON.parse(stdout);
+      return Object.keys(outdated)
+        .filter((pkg) => pkg.startsWith("dixt-plugin-"))
+        .map((plugin) => ({
+          name: plugin,
+          current: outdated[plugin].current,
+          wanted: outdated[plugin].wanted,
+        }));
+    } catch {
+      return [];
+    }
+  }
+
   private async checkPluginVersions() {
     const execAsync = promisify(exec);
 
@@ -86,17 +113,13 @@ class dixt {
         cwd: process.cwd(),
       });
 
-      if (stdout.trim()) {
-        const outdated = JSON.parse(stdout);
-        const outdatedPlugins = Object.keys(outdated).filter((pkg) =>
-          pkg.startsWith("dixt-plugin-"),
-        );
+      if (stdout?.trim()) {
+        const outdatedPlugins = this.parseOutdatedPlugins(stdout);
 
         if (outdatedPlugins.length > 0) {
           Log.warn("outdated plugins detected:");
-          outdatedPlugins.forEach((plugin) => {
-            const info = outdated[plugin];
-            Log.warn(`  ${plugin}: ${info.current} → ${info.wanted}`);
+          outdatedPlugins.forEach(({ name, current, wanted }) => {
+            Log.warn(`  ${name}: ${current} → ${wanted}`);
           });
           Log.warn("consider running: npm update");
         } else {
@@ -106,7 +129,21 @@ class dixt {
         Log.info("all plugins are up to date");
       }
     } catch (error) {
-      Log.warn("could not check plugin versions");
+      if (this.isExecError(error) && error.code === 1 && error.stdout) {
+        const outdatedPlugins = this.parseOutdatedPlugins(error.stdout);
+
+        if (outdatedPlugins.length > 0) {
+          Log.warn("outdated plugins detected:");
+          outdatedPlugins.forEach(({ name, current, wanted }) => {
+            Log.warn(`  ${name}: ${current} → ${wanted}`);
+          });
+          Log.warn("consider running: npm update");
+        } else {
+          Log.info("all plugins are up to date");
+        }
+      } else {
+        Log.info("all plugins are up to date");
+      }
     }
   }
 
