@@ -1,5 +1,13 @@
 import { exec } from "child_process";
-import { Client, Events, GatewayIntentBits, type Options } from "discord.js";
+import {
+  Client,
+  Collection,
+  Events,
+  GatewayIntentBits,
+  REST,
+  Routes,
+  type Options,
+} from "discord.js";
 import dotenv from "dotenv-flow";
 import EventEmiter from "events";
 import fs from "fs";
@@ -9,6 +17,7 @@ import path from "path";
 import process from "process";
 import { promisify } from "util";
 
+import { createHelpCommand } from "./commands/help";
 import type { DixtClient, DixtSlashCommandBuilder } from "./types";
 import Log from "./utils/log";
 
@@ -303,21 +312,107 @@ class dixt {
       pluginsToLoad = [...pluginsToLoad, ...discoveredPlugins];
     }
 
+    const allCommands: DixtSlashCommandBuilder[] = [];
+    this.client.commands = new Collection();
+
     if (pluginsToLoad.length === 0) {
       Log.info("skipping plugin loading, no plugins found");
     } else {
       Log.wait("loading plugins");
-      pluginsToLoad.forEach(async (plugin) => {
+      for (const plugin of pluginsToLoad) {
+        let result;
         if (Array.isArray(plugin)) {
           const [pluginModule, pluginOptions] = plugin;
-          const { name: pluginName } = await pluginModule(this, pluginOptions);
-          Log.info(`loaded plugin ${pluginName}`);
+          result = await pluginModule(this, pluginOptions);
         } else {
-          const { name: pluginName } = await plugin(this);
-          Log.info(`loaded plugin ${pluginName}`);
+          result = await plugin(this);
         }
-      });
+
+        const { name: pluginName, commands } = result;
+        Log.info(`loaded plugin ${pluginName}`);
+
+        if (commands && commands.length > 0) {
+          commands.forEach((command) => {
+            allCommands.push(command);
+            this.client.commands!.set(command.data.name, command);
+          });
+          Log.info(
+            `registered ${commands.length} command(s) from ${pluginName}`,
+          );
+        }
+      }
     }
+
+    // Add built-in /help command
+    const helpCommand = createHelpCommand(this.client);
+    allCommands.push(helpCommand);
+    this.client.commands!.set(helpCommand.data.name, helpCommand);
+    Log.info("registered built-in /help command");
+
+    // Register commands with Discord
+    if (allCommands.length > 0) {
+      Log.wait("deploying commands to discord");
+      try {
+        const rest = new REST().setToken(this.application.bot!.token!);
+        const commandsData = allCommands.map((cmd) => cmd.data.toJSON());
+
+        await rest.put(Routes.applicationCommands(this.application.id!), {
+          body: commandsData,
+        });
+
+        Log.ready(`deployed ${allCommands.length} command(s)`);
+      } catch (error) {
+        Log.error("failed to deploy commands:", error);
+      }
+    }
+
+    // Handle command interactions
+    this.client.on(Events.InteractionCreate, async (interaction) => {
+      // Handle autocomplete
+      if (interaction.isAutocomplete()) {
+        const command = this.client.commands!.get(interaction.commandName);
+
+        if (!command || !command.autocomplete) {
+          return;
+        }
+
+        try {
+          await command.autocomplete(interaction);
+        } catch (error) {
+          Log.error(
+            `error in autocomplete for ${interaction.commandName}:`,
+            error,
+          );
+        }
+        return;
+      }
+
+      // Handle command execution
+      if (!interaction.isChatInputCommand()) return;
+
+      const command = this.client.commands!.get(interaction.commandName);
+
+      if (!command) {
+        Log.warn(`unknown command: ${interaction.commandName}`);
+        return;
+      }
+
+      try {
+        await command.execute(interaction);
+      } catch (error) {
+        Log.error(`error executing command ${interaction.commandName}:`, error);
+        const errorMessage = {
+          content: "There was an error while executing this command!",
+          ephemeral: true,
+        };
+
+        if (interaction.replied || interaction.deferred) {
+          await interaction.followUp(errorMessage);
+        } else {
+          await interaction.reply(errorMessage);
+        }
+      }
+    });
 
     this.client.on(Events.ClientReady, () => {
       Log.ready("client is ready");

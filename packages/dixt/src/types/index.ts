@@ -5,14 +5,17 @@ import {
   Client,
   Collection,
   SlashCommandBuilder,
+  SlashCommandOptionsOnlyBuilder,
 } from "discord.js";
 
-export type DixtClient = Client<boolean> & {
-  commands?: Collection<string, SlashCommandBuilder>;
+export type DixtSlashCommandBuilder = {
+  data:
+    | Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup">
+    | SlashCommandOptionsOnlyBuilder;
+  execute: (_interaction: ChatInputCommandInteraction<CacheType>) => void;
+  autocomplete?: (_interaction: AutocompleteInteraction<CacheType>) => void;
 };
 
-export type DixtSlashCommandBuilder = SlashCommandBuilder & {
-  data: Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup">;
-  execute: (_interaction: ChatInputCommandInteraction<CacheType>) => void;
-  autocomplete: (_interaction: AutocompleteInteraction<CacheType>) => void;
+export type DixtClient = Client<boolean> & {
+  commands?: Collection<string, DixtSlashCommandBuilder>;
 };
