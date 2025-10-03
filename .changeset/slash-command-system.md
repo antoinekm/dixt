@@ -1,7 +1,6 @@
 ---
 "dixt": minor
 "dixt-plugin-react": patch
-"dixt-plugin-template": patch
 ---
 
 Add slash command system with auto-registration and built-in /help command
