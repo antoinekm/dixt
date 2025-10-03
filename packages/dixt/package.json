@@ -16,6 +16,7 @@
     "mongoose": "^8.0.0"
   },
   "devDependencies": {
+    "@types/chalk": "^2.2.4",
     "@types/lodash": "^4.14.194",
     "@types/node": "^20.0.0",
     "typescript": "^5.0.0"
