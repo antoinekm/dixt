@@ -27,7 +27,7 @@ npx create-dixt-bot@latest my-bot
 # or
 pnpm create dixt-bot@latest my-bot
 # or
-yarn create dixt-bot my-bot
+yarn create dixt-bot@latest my-bot
 ```
 
 The CLI will guide you through:
@@ -44,7 +44,7 @@ npm install dixt@latest discord.js
 # or
 pnpm add dixt@latest discord.js
 # or
-yarn add dixt discord.js
+yarn add dixt@latest discord.js
 ```
 
 ### Basic Usage
