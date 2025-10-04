@@ -1,6 +1,6 @@
 {
   "name": "dixt-plugin-react",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "Discord bot framework - react plugin",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -20,6 +20,6 @@
   },
   "peerDependencies": {
     "discord.js": "^14.9.0",
-    "dixt": "^4.0.0"
+    "dixt": "^5.0.0"
   }
 }
