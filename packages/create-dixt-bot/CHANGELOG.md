@@ -1,5 +1,14 @@
 # create-dixt-bot
 
+## 5.0.7
+
+### Patch Changes
+
+- 5682029: Improve template structure
+
+  - Remove redundant application.name configuration (already set in .env)
+  - Use proper async main() function instead of IIFE
+
 ## 5.0.6
 
 ### Patch Changes

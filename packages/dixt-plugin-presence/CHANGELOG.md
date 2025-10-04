@@ -1,5 +1,11 @@
 # dixt-plugin-presence
 
+## 5.0.7
+
+### Patch Changes
+
+- dixt@5.0.7
+
 ## 5.0.6
 
 ### Patch Changes
