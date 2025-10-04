@@ -1,5 +1,16 @@
 # create-dixt-bot
 
+## 5.0.3
+
+### Patch Changes
+
+- 1ab594d: Add interactive Discord credentials setup
+
+  - Interactive prompts for Discord Application ID and Bot Token with step-by-step guide
+  - Automatically create .env file with credentials
+  - Add `--skip-env` flag to skip credentials setup
+  - Add detailed Discord setup instructions in generated README
+
 ## 5.0.2
 
 ### Patch Changes

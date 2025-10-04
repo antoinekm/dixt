@@ -1,5 +1,11 @@
 # dixt-plugin-react
 
+## 5.0.3
+
+### Patch Changes
+
+- dixt@5.0.3
+
 ## 5.0.2
 
 ### Patch Changes
