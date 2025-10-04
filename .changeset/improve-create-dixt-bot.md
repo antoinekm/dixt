@@ -1,5 +1,5 @@
 ---
-"create-dixt-bot": minor
+"create-dixt-bot": patch
 ---
 
 Add interactive Discord credentials setup
