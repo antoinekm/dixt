@@ -335,6 +335,22 @@ DIXT_BOT_TOKEN=${envConfig.botToken}
 `;
             fs.writeFileSync(path.join(projectPath, ".env"), envContent);
             clack.log.success("✓ Created .env file with your credentials");
+
+            console.log("");
+            clack.note(
+              `To invite your bot to your Discord server:
+
+1. Go to https://discord.com/developers/applications/${envConfig.applicationId}/oauth2/url-generator
+2. Select scopes: "bot" and "applications.commands"
+3. Select permissions your bot needs (e.g., Send Messages, Manage Roles)
+4. Copy the generated URL at the bottom
+5. Open it in your browser and select your server
+
+Or use this quick link with basic permissions:
+https://discord.com/api/oauth2/authorize?client_id=${envConfig.applicationId}&permissions=8&scope=bot%20applications.commands`,
+              "🔗 Invite Your Bot",
+            );
+            console.log("");
           } else {
             clack.log.info(
               "→ Don't forget to copy .env.example to .env and fill in your credentials",
