@@ -23,9 +23,9 @@
 The fastest way to get started:
 
 ```bash
-npx create-dixt-bot my-bot
+npx create-dixt-bot@latest my-bot
 # or
-pnpm create dixt-bot my-bot
+pnpm create dixt-bot@latest my-bot
 # or
 yarn create dixt-bot my-bot
 ```
@@ -40,9 +40,9 @@ The CLI will guide you through:
 ### Manual Installation
 
 ```bash
-npm install dixt discord.js
+npm install dixt@latest discord.js
 # or
-pnpm add dixt discord.js
+pnpm add dixt@latest discord.js
 # or
 yarn add dixt discord.js
 ```

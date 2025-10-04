@@ -6,8 +6,30 @@ import fs from "fs";
 import Handlebars from "handlebars";
 import path from "path";
 
-// Get __dirname equivalent in CommonJS
-const __dirname = __filename ? path.dirname(__filename) : process.cwd();
+declare const __dirname: string;
+
+const createSpinner = () => {
+  try {
+    return clack.spinner();
+  } catch {
+    return {
+      start: (msg: string) => console.log(msg),
+      stop: (msg: string) => console.log(msg),
+    };
+  }
+};
+
+const getLatestVersion = async (packageName: string): Promise<string> => {
+  try {
+    const response = await fetch(
+      `https://registry.npmjs.org/${packageName}/latest`,
+    );
+    const data = await response.json();
+    return `^${data.version}`;
+  } catch {
+    return "latest";
+  }
+};
 
 const program = new Command();
 
@@ -15,238 +37,284 @@ program
   .name("create-dixt-bot")
   .description("Create a new dixt Discord bot")
   .argument("[project-name]", "Name of your bot project")
-  .action(async (projectName?: string) => {
-    console.clear();
-
-    clack.intro("🔌 Create Dixt Bot");
-
-    const options = await clack.group(
-      {
-        projectName: () =>
-          projectName
-            ? Promise.resolve(projectName)
-            : clack.text({
-                message: "What is your bot name?",
-                placeholder: "my-discord-bot",
-                validate: (value) => {
-                  if (!value) return "Please enter a bot name";
-                  if (!/^[a-z0-9-]+$/.test(value))
-                    return "Name must be lowercase letters, numbers, and hyphens only";
-                  return undefined;
-                },
-              }),
-        useTypeScript: () =>
-          clack.confirm({
-            message: "Use TypeScript?",
-            initialValue: true,
-          }),
-        plugins: () =>
-          clack.multiselect({
-            message: "Select plugins to install (optional):",
-            options: [
-              { value: "dixt-plugin-logs", label: "Logs - Server logging" },
-              {
-                value: "dixt-plugin-roles",
-                label: "Roles - Self-assignable roles",
-              },
-              {
-                value: "dixt-plugin-join",
-                label: "Join - Welcome messages",
-              },
-              {
-                value: "dixt-plugin-react",
-                label: "React - Auto-react to messages",
-              },
-              {
-                value: "dixt-plugin-presence",
-                label: "Presence - Custom bot status",
-              },
-            ],
-            required: false,
-          }),
-        createExamplePlugin: () =>
-          clack.confirm({
-            message: "Create an example plugin?",
-            initialValue: true,
-          }),
-        packageManager: () =>
-          clack.select({
-            message: "Which package manager?",
-            options: [
-              { value: "pnpm", label: "pnpm" },
-              { value: "npm", label: "npm" },
-              { value: "yarn", label: "yarn" },
-            ],
-            initialValue: "pnpm",
-          }),
+  .option("--typescript", "Use TypeScript")
+  .option("--javascript", "Use JavaScript")
+  .option("--pm <manager>", "Package manager (pnpm, npm, yarn)")
+  .option("--plugins <plugins...>", "Plugins to install (space-separated)")
+  .option("--no-plugins", "Don't install any plugins")
+  .option("--no-example", "Don't create example plugin")
+  .option("--skip-install", "Skip dependency installation")
+  .action(
+    async (
+      projectName?: string,
+      cmdOptions?: {
+        typescript?: boolean;
+        javascript?: boolean;
+        pm?: string;
+        plugins?: string[] | boolean;
+        example?: boolean;
+        skipInstall?: boolean;
       },
-      {
-        onCancel: () => {
-          clack.cancel("Operation cancelled");
-          process.exit(0);
-        },
-      },
-    );
-
-    const projectPath = path.join(process.cwd(), options.projectName as string);
-
-    // Check if directory exists
-    if (fs.existsSync(projectPath)) {
-      clack.cancel(`Directory ${options.projectName} already exists`);
-      process.exit(1);
-    }
-
-    const s = clack.spinner();
-    s.start("Creating project structure...");
-
-    // Template data
-    const templateData = {
-      projectName: options.projectName,
-      useTypeScript: options.useTypeScript,
-      createExamplePlugin: options.createExamplePlugin,
-      packageManager: options.packageManager,
-    };
-
-    // Create project directory
-    fs.mkdirSync(projectPath, { recursive: true });
-
-    // Create subdirectories
-    fs.mkdirSync(path.join(projectPath, "src"), { recursive: true });
-    if (options.createExamplePlugin) {
-      fs.mkdirSync(path.join(projectPath, "plugins"), { recursive: true });
-    }
-
-    // Template directory
-    const templatesDir = path.join(__dirname, "../templates");
-    const langDir = options.useTypeScript ? "typescript" : "javascript";
-
-    // Helper function to render and write template
-    const renderTemplate = (
-      templatePath: string,
-      outputPath: string,
-      data: Record<string, string | boolean | string[]>,
     ) => {
-      const templateContent = fs.readFileSync(templatePath, "utf-8");
-      const template = Handlebars.compile(templateContent);
-      const rendered = template(data);
-      fs.writeFileSync(outputPath, rendered);
-    };
+      try {
+        console.clear();
 
-    // Create package.json
-    const packageJson = {
-      name: options.projectName,
-      version: "1.0.0",
-      type: options.useTypeScript ? "module" : "commonjs",
-      scripts: options.useTypeScript
-        ? {
-            dev: "dixt dev",
-            build: "dixt build",
-            start: "dixt start",
-          }
-        : {
-            dev: "dixt dev",
-            start: "dixt start",
+        clack.intro("🔌 Create Dixt Bot");
+
+        const options = await clack.group(
+          {
+            projectName: () =>
+              projectName
+                ? Promise.resolve(projectName)
+                : clack.text({
+                    message: "What is your bot name?",
+                    placeholder: "my-discord-bot",
+                    validate: (value) => {
+                      if (!value) return "Please enter a bot name";
+                      if (!/^[a-z0-9-]+$/.test(value))
+                        return "Name must be lowercase letters, numbers, and hyphens only";
+                      return undefined;
+                    },
+                  }),
+            useTypeScript: () =>
+              cmdOptions?.typescript !== undefined ||
+              cmdOptions?.javascript !== undefined
+                ? Promise.resolve(cmdOptions?.typescript ?? true)
+                : clack.confirm({
+                    message: "Use TypeScript?",
+                    initialValue: true,
+                  }),
+            plugins: () =>
+              cmdOptions &&
+              ("plugins" in cmdOptions || cmdOptions.plugins === false)
+                ? Promise.resolve(
+                    cmdOptions.plugins === false
+                      ? []
+                      : cmdOptions.plugins || [],
+                  )
+                : clack.multiselect({
+                    message: "Select plugins to install (optional):",
+                    options: [
+                      {
+                        value: "dixt-plugin-logs",
+                        label: "Logs - Server logging",
+                      },
+                      {
+                        value: "dixt-plugin-roles",
+                        label: "Roles - Self-assignable roles",
+                      },
+                      {
+                        value: "dixt-plugin-join",
+                        label: "Join - Welcome messages",
+                      },
+                      {
+                        value: "dixt-plugin-react",
+                        label: "React - Auto-react to messages",
+                      },
+                      {
+                        value: "dixt-plugin-presence",
+                        label: "Presence - Custom bot status",
+                      },
+                    ],
+                    required: false,
+                  }),
+            createExamplePlugin: () =>
+              cmdOptions?.example !== undefined
+                ? Promise.resolve(cmdOptions?.example)
+                : clack.confirm({
+                    message: "Create an example plugin?",
+                    initialValue: true,
+                  }),
+            packageManager: () =>
+              cmdOptions?.pm !== undefined
+                ? Promise.resolve(cmdOptions?.pm)
+                : clack.select({
+                    message: "Which package manager?",
+                    options: [
+                      { value: "pnpm", label: "pnpm" },
+                      { value: "npm", label: "npm" },
+                      { value: "yarn", label: "yarn" },
+                    ],
+                    initialValue: "pnpm",
+                  }),
           },
-      dependencies: {
-        dixt: "^4.0.0",
-        "discord.js": "^14.0.0",
-        ...(options.plugins as string[]).reduce(
-          (acc, plugin) => ({ ...acc, [plugin]: "^4.0.0" }),
-          {},
-        ),
-      },
-      devDependencies: options.useTypeScript
-        ? {
-            "@types/node": "^20.0.0",
-            typescript: "^5.0.0",
+          {
+            onCancel: () => {
+              clack.cancel("Operation cancelled");
+              process.exit(0);
+            },
+          },
+        );
+
+        const projectPath = path.join(
+          process.cwd(),
+          options.projectName as string,
+        );
+
+        if (fs.existsSync(projectPath)) {
+          clack.cancel(`Directory ${options.projectName} already exists`);
+          process.exit(1);
+        }
+
+        const s = createSpinner();
+        s.start("Creating project structure...");
+
+        const templateData = {
+          projectName: options.projectName,
+          useTypeScript: options.useTypeScript,
+          createExamplePlugin: options.createExamplePlugin,
+          packageManager: options.packageManager,
+        };
+
+        fs.mkdirSync(projectPath, { recursive: true });
+        fs.mkdirSync(path.join(projectPath, "src"), { recursive: true });
+        if (options.createExamplePlugin) {
+          fs.mkdirSync(path.join(projectPath, "plugins"), { recursive: true });
+        }
+
+        const templatesDir = path.join(__dirname, "../templates");
+        const langDir = options.useTypeScript ? "typescript" : "javascript";
+
+        const renderTemplate = (
+          templatePath: string,
+          outputPath: string,
+          data: Record<string, string | boolean | string[]>,
+        ) => {
+          const templateContent = fs.readFileSync(templatePath, "utf-8");
+          const template = Handlebars.compile(templateContent);
+          const rendered = template(data);
+          fs.writeFileSync(outputPath, rendered);
+        };
+
+        const dixtVersion = await getLatestVersion("dixt");
+        const pluginVersions = await Promise.all(
+          (options.plugins as string[]).map(async (plugin) => ({
+            name: plugin,
+            version: await getLatestVersion(plugin),
+          })),
+        );
+        const packageJson = {
+          name: options.projectName,
+          version: "1.0.0",
+          type: options.useTypeScript ? "module" : "commonjs",
+          scripts: options.useTypeScript
+            ? {
+                dev: "dixt dev",
+                build: "dixt build",
+                start: "dixt start",
+              }
+            : {
+                dev: "dixt dev",
+                start: "dixt start",
+              },
+          dependencies: {
+            dixt: dixtVersion,
+            "discord.js": "^14.0.0",
+            ...pluginVersions.reduce(
+              (acc, { name, version }) => ({ ...acc, [name]: version }),
+              {},
+            ),
+          },
+          devDependencies: options.useTypeScript
+            ? {
+                "@types/node": "^20.0.0",
+                typescript: "^5.0.0",
+              }
+            : {},
+        };
+
+        fs.writeFileSync(
+          path.join(projectPath, "package.json"),
+          JSON.stringify(packageJson, null, 2),
+        );
+
+        renderTemplate(
+          path.join(templatesDir, "common", "env.template"),
+          path.join(projectPath, ".env.example"),
+          templateData,
+        );
+
+        renderTemplate(
+          path.join(templatesDir, "common", "gitignore.template"),
+          path.join(projectPath, ".gitignore"),
+          templateData,
+        );
+
+        const ext = options.useTypeScript ? "ts" : "js";
+        renderTemplate(
+          path.join(templatesDir, langDir, `index.${ext}.template`),
+          path.join(projectPath, "src", `index.${ext}`),
+          templateData,
+        );
+
+        if (options.useTypeScript) {
+          renderTemplate(
+            path.join(templatesDir, "typescript", "tsconfig.json.template"),
+            path.join(projectPath, "tsconfig.json"),
+            templateData,
+          );
+        }
+
+        if (options.createExamplePlugin) {
+          renderTemplate(
+            path.join(templatesDir, langDir, `my-plugin.${ext}.template`),
+            path.join(projectPath, "plugins", `my-plugin.${ext}`),
+            templateData,
+          );
+        }
+
+        renderTemplate(
+          path.join(templatesDir, "common", "README.md.template"),
+          path.join(projectPath, "README.md"),
+          templateData,
+        );
+
+        s.stop("Project created!");
+        if (!cmdOptions?.skipInstall) {
+          const installSpinner = createSpinner();
+          installSpinner.start("Installing dependencies...");
+
+          try {
+            const pmCommands = {
+              pnpm: "pnpm install",
+              npm: "npm install",
+              yarn: "yarn",
+            };
+
+            execSync(
+              pmCommands[options.packageManager as keyof typeof pmCommands],
+              {
+                cwd: projectPath,
+                stdio: "inherit",
+              },
+            );
+
+            installSpinner.stop("Dependencies installed!");
+          } catch (error) {
+            installSpinner.stop("Failed to install dependencies");
+            clack.log.error("You can install them manually by running:");
+            clack.log.info(
+              `  cd ${options.projectName} && ${options.packageManager} install`,
+            );
           }
-        : {},
-    };
+        }
 
-    fs.writeFileSync(
-      path.join(projectPath, "package.json"),
-      JSON.stringify(packageJson, null, 2),
-    );
+        clack.outro("🎉 Your dixt bot is ready!");
 
-    // Create .env.example from template
-    renderTemplate(
-      path.join(templatesDir, "common", "env"),
-      path.join(projectPath, ".env.example"),
-      templateData,
-    );
-
-    // Create .gitignore from template
-    renderTemplate(
-      path.join(templatesDir, "common", "gitignore"),
-      path.join(projectPath, ".gitignore"),
-      templateData,
-    );
-
-    // Create main file from template
-    const ext = options.useTypeScript ? "ts" : "js";
-    renderTemplate(
-      path.join(templatesDir, langDir, `index.${ext}`),
-      path.join(projectPath, "src", `index.${ext}`),
-      templateData,
-    );
-
-    // Create tsconfig if TypeScript
-    if (options.useTypeScript) {
-      fs.copyFileSync(
-        path.join(templatesDir, "typescript", "tsconfig.json.template"),
-        path.join(projectPath, "tsconfig.json"),
-      );
-    }
-
-    // Create example plugin if requested
-    if (options.createExamplePlugin) {
-      renderTemplate(
-        path.join(templatesDir, langDir, `my-plugin.${ext}`),
-        path.join(projectPath, "plugins", `my-plugin.${ext}`),
-        templateData,
-      );
-    }
-
-    // Create README from template
-    renderTemplate(
-      path.join(templatesDir, "common", "README.md"),
-      path.join(projectPath, "README.md"),
-      templateData,
-    );
-
-    s.stop("Project created!");
-
-    // Install dependencies
-    const installSpinner = clack.spinner();
-    installSpinner.start("Installing dependencies...");
-
-    try {
-      const pmCommands = {
-        pnpm: "pnpm install",
-        npm: "npm install",
-        yarn: "yarn",
-      };
-
-      execSync(pmCommands[options.packageManager as keyof typeof pmCommands], {
-        cwd: projectPath,
-        stdio: "inherit",
-      });
-
-      installSpinner.stop("Dependencies installed!");
-    } catch (error) {
-      installSpinner.stop("Failed to install dependencies");
-      clack.log.error("You can install them manually by running:");
-      clack.log.info(
-        `  cd ${options.projectName} && ${options.packageManager} install`,
-      );
-    }
-
-    clack.outro("🎉 Your dixt bot is ready!");
-
-    console.log("\nNext steps:");
-    clack.log.step(`  cd ${options.projectName}`);
-    clack.log.step("  Copy .env.example to .env and fill in your credentials");
-    clack.log.step(`  ${options.packageManager}} run dev`);
-  });
+        console.log("\nNext steps:");
+        clack.log.step(`  cd ${options.projectName}`);
+        clack.log.step(
+          "  Copy .env.example to .env and fill in your credentials",
+        );
+        clack.log.step(`  ${options.packageManager} run dev`);
+      } catch (error) {
+        console.error(
+          "\nError:",
+          error instanceof Error ? error.message : error,
+        );
+        process.exit(1);
+      }
+    },
+  );
 
 program.parse();
