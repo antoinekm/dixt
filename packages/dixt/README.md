@@ -308,6 +308,7 @@ MIT © [Antoine Kingue](https://github.com/antoinekm)
 - [Documentation](https://dixt.vercel.app)
 - [NPM Package](https://www.npmjs.com/package/dixt)
 - [GitHub Repository](https://github.com/antoinekm/dixt)
+- [Discord Community](https://discord.com/invite/n7vQFX2Vnn)
 - [Issues](https://github.com/antoinekm/dixt/issues)
 
 ---
