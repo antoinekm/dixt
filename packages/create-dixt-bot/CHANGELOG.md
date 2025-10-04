@@ -1,5 +1,14 @@
 # create-dixt-bot
 
+## 5.0.4
+
+### Patch Changes
+
+- 00a2597: Fix tsx dependency for TypeScript projects
+
+  - Add tsx to devDependencies in generated TypeScript projects
+  - Fix tsx loader path to use project's node_modules instead of dixt's
+
 ## 5.0.3
 
 ### Patch Changes
