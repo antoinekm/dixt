@@ -10,5 +10,7 @@ const bot = new dixt({
   plugins: [myPlugin],{{/if}}
 });
 
-await bot.start();
-console.log("Bot is running!");
+(async () => {
+  await bot.start();
+  console.log("Bot is running!");
+})();

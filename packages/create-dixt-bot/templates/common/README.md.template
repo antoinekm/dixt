@@ -17,7 +17,8 @@ A Discord bot built with [dixt](https://github.com/antoinekm/dixt).
    - Go to the "Bot" tab
    - Click "Add Bot"
    - Under the bot's username, click "Reset Token" and copy it (you'll need this for `DIXT_BOT_TOKEN`)
-   - Enable the following **Privileged Gateway Intents**:
+   - Enable all **Privileged Gateway Intents**:
+     - Presence Intent
      - Server Members Intent
      - Message Content Intent
 

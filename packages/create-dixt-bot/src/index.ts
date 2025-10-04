@@ -198,7 +198,6 @@ program
         const packageJson = {
           name: options.projectName,
           version: "1.0.0",
-          type: options.useTypeScript ? "module" : "commonjs",
           scripts: options.useTypeScript
             ? {
                 dev: "dixt dev",
@@ -274,6 +273,8 @@ program
 
         s.stop("Project created!");
 
+        let applicationId: string | null = null;
+
         if (!cmdOptions?.skipEnv) {
           clack.note(
             `To get your Discord credentials:
@@ -283,7 +284,10 @@ program
 3. Go to "General Information" → Copy your Application ID
 4. Go to "Bot" → Click "Add Bot" if needed
 5. Under "Token" → Click "Reset Token" → Copy the token
-6. Enable "Message Content Intent" under Privileged Gateway Intents`,
+6. Enable all Privileged Gateway Intents:
+   - Presence Intent
+   - Server Members Intent
+   - Message Content Intent`,
             "📝 Discord Setup Guide",
           );
 
@@ -328,28 +332,13 @@ program
           );
 
           if (!clack.isCancel(envConfig) && envConfig.setupNow) {
+            applicationId = envConfig.applicationId as string;
             const envContent = `DIXT_APPLICATION_ID=${envConfig.applicationId}
 DIXT_APPLICATION_NAME=${options.projectName}
 DIXT_BOT_TOKEN=${envConfig.botToken}
 `;
             fs.writeFileSync(path.join(projectPath, ".env"), envContent);
             clack.log.success("✓ Created .env file with your credentials");
-
-            console.log("");
-            clack.note(
-              `To invite your bot to your Discord server:
-
-1. Go to https://discord.com/developers/applications/${envConfig.applicationId}/oauth2/url-generator
-2. Select scopes: "bot" and "applications.commands"
-3. Select permissions your bot needs (e.g., Send Messages, Manage Roles)
-4. Copy the generated URL at the bottom
-5. Open it in your browser and select your server
-
-Or use this quick link with basic permissions:
-https://discord.com/api/oauth2/authorize?client_id=${envConfig.applicationId}&permissions=8&scope=bot%20applications.commands`,
-              "🔗 Invite Your Bot",
-            );
-            console.log("");
           } else {
             clack.log.info(
               "→ Don't forget to copy .env.example to .env and fill in your credentials",
@@ -388,17 +377,28 @@ https://discord.com/api/oauth2/authorize?client_id=${envConfig.applicationId}&pe
 
         clack.outro("🎉 Your dixt bot is ready!");
 
-        clack.intro("\nNext steps:");
+        console.log("\nNext steps:");
         clack.log.step(`  cd ${options.projectName}`);
-        clack.log.step(
-          "  Get your bot credentials from https://discord.com/developers/applications",
-        );
-        clack.log.step(
-          "  Copy .env.example to .env and fill in your credentials",
-        );
-        clack.log.step(`  ${options.packageManager} install`);
+
+        if (applicationId) {
+          clack.log.step(
+            `  Invite your bot: https://discord.com/api/oauth2/authorize?client_id=${applicationId}&permissions=8&scope=bot%20applications.commands`,
+          );
+        } else {
+          clack.log.step(
+            "  Get your bot credentials from https://discord.com/developers/applications",
+          );
+          clack.log.step(
+            "  Copy .env.example to .env and fill in your credentials",
+          );
+        }
+
+        if (cmdOptions?.skipInstall) {
+          clack.log.step(`  ${options.packageManager} install`);
+        }
+
         clack.log.step(`  ${options.packageManager} run dev`);
-        clack.outro("\n📖 Check the README.md for detailed setup instructions");
+        console.log("\n📖 Check the README.md for detailed setup instructions");
       } catch (error) {
         console.error(
           "\nError:",
