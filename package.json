@@ -8,6 +8,7 @@
     "start": "turbo start",
     "build": "turbo build",
     "build:core": "turbo run build --filter=dixt",
+    "build:create": "turbo run build --filter=create-dixt-bot",
     "build:plugins": "turbo run build --filter='dixt-plugin-*' --parallel",
     "build:docs": "turbo run build --filter=docs",
     "dev": "turbo dev",
