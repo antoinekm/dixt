@@ -1,6 +1,6 @@
 {
   "name": "dixt-plugin-presence",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "description": "Discord bot framework - presence plugin",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -19,7 +19,7 @@
     "typescript": "^5.0.0"
   },
   "peerDependencies": {
-    "dixt": "^5.0.2",
+    "dixt": "^5.0.3",
     "discord.js": "^14.9.0"
   }
 }

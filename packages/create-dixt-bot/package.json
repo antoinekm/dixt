@@ -1,6 +1,6 @@
 {
   "name": "create-dixt-bot",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "description": "CLI tool to create a new dixt Discord bot",
   "bin": {
     "create-dixt-bot": "./dist/index.js"
