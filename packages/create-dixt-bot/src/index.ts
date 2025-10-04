@@ -44,6 +44,7 @@ program
   .option("--no-plugins", "Don't install any plugins")
   .option("--no-example", "Don't create example plugin")
   .option("--skip-install", "Skip dependency installation")
+  .option("--skip-env", "Skip Discord credentials setup")
   .action(
     async (
       projectName?: string,
@@ -54,6 +55,7 @@ program
         plugins?: string[] | boolean;
         example?: boolean;
         skipInstall?: boolean;
+        skipEnv?: boolean;
       },
     ) => {
       try {
@@ -270,6 +272,76 @@ program
         );
 
         s.stop("Project created!");
+
+        if (!cmdOptions?.skipEnv) {
+          console.log("");
+          clack.note(
+            `To get your Discord credentials:
+
+1. Go to https://discord.com/developers/applications
+2. Click "New Application" and give it a name
+3. Go to "General Information" → Copy your Application ID
+4. Go to "Bot" → Click "Add Bot" if needed
+5. Under "Token" → Click "Reset Token" → Copy the token
+6. Enable "Message Content Intent" under Privileged Gateway Intents`,
+            "📝 Discord Setup Guide",
+          );
+          console.log("");
+
+          const envConfig = await clack.group(
+            {
+              setupNow: () =>
+                clack.confirm({
+                  message:
+                    "Do you want to configure your Discord credentials now?",
+                  initialValue: true,
+                }),
+              applicationId: ({ results }) =>
+                results.setupNow
+                  ? clack.text({
+                      message: "Discord Application ID:",
+                      placeholder: "123456789012345678",
+                      validate: (value) => {
+                        if (!value) return "Application ID is required";
+                        if (!/^\d+$/.test(value))
+                          return "Application ID must be numeric";
+                        return undefined;
+                      },
+                    })
+                  : Promise.resolve(""),
+              botToken: ({ results }) =>
+                results.setupNow
+                  ? clack.text({
+                      message: "Discord Bot Token:",
+                      placeholder: "Your bot token here",
+                      validate: (value) => {
+                        if (!value) return "Bot token is required";
+                        return undefined;
+                      },
+                    })
+                  : Promise.resolve(""),
+            },
+            {
+              onCancel: () => {
+                clack.cancel("Skipping credentials setup");
+              },
+            },
+          );
+
+          if (!clack.isCancel(envConfig) && envConfig.setupNow) {
+            const envContent = `DIXT_APPLICATION_ID=${envConfig.applicationId}
+DIXT_APPLICATION_NAME=${options.projectName}
+DIXT_BOT_TOKEN=${envConfig.botToken}
+`;
+            fs.writeFileSync(path.join(projectPath, ".env"), envContent);
+            clack.log.success("✓ Created .env file with your credentials");
+          } else {
+            clack.log.info(
+              "→ Don't forget to copy .env.example to .env and fill in your credentials",
+            );
+          }
+        }
+
         if (!cmdOptions?.skipInstall) {
           const installSpinner = createSpinner();
           installSpinner.start("Installing dependencies...");
@@ -304,9 +376,14 @@ program
         console.log("\nNext steps:");
         clack.log.step(`  cd ${options.projectName}`);
         clack.log.step(
+          "  Get your bot credentials from https://discord.com/developers/applications",
+        );
+        clack.log.step(
           "  Copy .env.example to .env and fill in your credentials",
         );
+        clack.log.step(`  ${options.packageManager} install`);
         clack.log.step(`  ${options.packageManager} run dev`);
+        console.log("\n📖 Check the README.md for detailed setup instructions");
       } catch (error) {
         console.error(
           "\nError:",
