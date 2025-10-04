@@ -26,11 +26,9 @@ export default async function devCommand() {
         return;
       }
 
-      // Find tsx from dixt's node_modules (where this CLI is installed)
-      // __dirname points to dist/cli in the dixt package
-      const dixtRoot = join(__dirname, "..", "..");
+      // Find tsx from the user's project node_modules
       const tsxLoader = join(
-        dixtRoot,
+        process.cwd(),
         "node_modules",
         "tsx",
         "dist",

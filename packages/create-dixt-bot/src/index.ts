@@ -221,6 +221,7 @@ program
             ? {
                 "@types/node": "^20.0.0",
                 typescript: "^5.0.0",
+                tsx: "^4.0.0",
               }
             : {},
         };
@@ -274,7 +275,6 @@ program
         s.stop("Project created!");
 
         if (!cmdOptions?.skipEnv) {
-          console.log("");
           clack.note(
             `To get your Discord credentials:
 
@@ -286,7 +286,6 @@ program
 6. Enable "Message Content Intent" under Privileged Gateway Intents`,
             "📝 Discord Setup Guide",
           );
-          console.log("");
 
           const envConfig = await clack.group(
             {
@@ -389,7 +388,7 @@ https://discord.com/api/oauth2/authorize?client_id=${envConfig.applicationId}&pe
 
         clack.outro("🎉 Your dixt bot is ready!");
 
-        console.log("\nNext steps:");
+        clack.intro("\nNext steps:");
         clack.log.step(`  cd ${options.projectName}`);
         clack.log.step(
           "  Get your bot credentials from https://discord.com/developers/applications",
@@ -399,7 +398,7 @@ https://discord.com/api/oauth2/authorize?client_id=${envConfig.applicationId}&pe
         );
         clack.log.step(`  ${options.packageManager} install`);
         clack.log.step(`  ${options.packageManager} run dev`);
-        console.log("\n📖 Check the README.md for detailed setup instructions");
+        clack.outro("\n📖 Check the README.md for detailed setup instructions");
       } catch (error) {
         console.error(
           "\nError:",
