@@ -1,5 +1,14 @@
 # create-dixt-bot
 
+## 5.0.6
+
+### Patch Changes
+
+- cd5d148: Fix TypeScript configuration
+
+  - Fix tsconfig.json to use CommonJS module system
+  - Include all .ts files instead of specific directories
+
 ## 5.0.5
 
 ### Patch Changes
