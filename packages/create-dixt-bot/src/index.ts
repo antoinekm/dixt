@@ -377,7 +377,7 @@ DIXT_BOT_TOKEN=${envConfig.botToken}
 
         clack.outro("🎉 Your dixt bot is ready!");
 
-        console.log("\nNext steps:");
+        clack.intro("\nNext steps:");
         clack.log.step(`  cd ${options.projectName}`);
 
         if (applicationId) {
@@ -398,7 +398,7 @@ DIXT_BOT_TOKEN=${envConfig.botToken}
         }
 
         clack.log.step(`  ${options.packageManager} run dev`);
-        console.log("\n📖 Check the README.md for detailed setup instructions");
+        clack.outro("\n📖 Check the README.md for detailed setup instructions");
       } catch (error) {
         console.error(
           "\nError:",
