@@ -1,5 +1,11 @@
 # dixt-plugin-affix
 
+## 5.0.5
+
+### Patch Changes
+
+- dixt@5.0.5
+
 ## 5.0.4
 
 ### Patch Changes
