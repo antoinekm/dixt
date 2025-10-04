@@ -171,37 +171,60 @@ class dixt {
           }
           const plugin = pluginModule.default || pluginModule;
 
-          let optionsPath = path.join(
+          const optionsPath = path.join(
             process.cwd(),
             this.pluginOptionsPath!,
             pluginName.replace("dixt-plugin-", ""),
           );
 
-          // Fallback to src/options if options doesn't exist
-          if (
-            !fs.existsSync(`${optionsPath}.ts`) &&
-            !fs.existsSync(`${optionsPath}.js`) &&
-            this.pluginOptionsPath === "options"
-          ) {
-            optionsPath = path.join(
+          const tsPath = path.resolve(`${optionsPath}.ts`);
+          const jsPath = path.resolve(`${optionsPath}.js`);
+
+          // Try to find options in this order:
+          // 1. Current path (options/*.ts or options/*.js)
+          // 2. dist/options/*.js (production build)
+          // 3. src/options/*.ts (development)
+          let finalPath: string | null = null;
+
+          if (fs.existsSync(jsPath)) {
+            finalPath = jsPath;
+          } else if (fs.existsSync(tsPath)) {
+            finalPath = tsPath;
+          } else if (this.pluginOptionsPath === "options") {
+            // Try dist/options for production
+            const distJsPath = path.resolve(
               process.cwd(),
-              "src",
+              "dist",
               "options",
-              pluginName.replace("dixt-plugin-", ""),
+              `${pluginName.replace("dixt-plugin-", "")}.js`,
             );
+            if (fs.existsSync(distJsPath)) {
+              finalPath = distJsPath;
+            } else {
+              // Try src/options for development
+              const srcTsPath = path.resolve(
+                process.cwd(),
+                "src",
+                "options",
+                `${pluginName.replace("dixt-plugin-", "")}.ts`,
+              );
+              if (fs.existsSync(srcTsPath)) {
+                finalPath = srcTsPath;
+              }
+            }
           }
 
-          if (
-            fs.existsSync(`${optionsPath}.ts`) ||
-            fs.existsSync(`${optionsPath}.js`)
-          ) {
+          if (finalPath) {
             try {
+              // Clear require cache to ensure fresh load
+              delete require.cache[finalPath];
               // eslint-disable-next-line @typescript-eslint/no-var-requires
-              const optionsModule = require(optionsPath);
+              const optionsModule = require(finalPath);
               const options = optionsModule.default || optionsModule;
               discoveredPlugins.push([plugin, options]);
               Log.info(`discovered plugin ${pluginName} with options`);
-            } catch {
+            } catch (error) {
+              Log.warn(`failed to load options for ${pluginName}: ${error}`);
               discoveredPlugins.push(plugin);
               Log.info(`discovered plugin ${pluginName} without options`);
             }

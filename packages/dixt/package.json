@@ -4,16 +4,22 @@
   "description": "Discord bot framework",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "dixt": "./dist/cli/index.js"
+  },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch"
   },
   "dependencies": {
     "chalk": "4.1.2",
+    "chokidar": "^4.0.0",
+    "commander": "^12.0.0",
     "discord.js": "^14.9.0",
     "dotenv-flow": "^4.0.0",
     "lodash": "^4.17.21",
-    "mongoose": "^8.0.0"
+    "mongoose": "^8.0.0",
+    "tsx": "^4.0.0"
   },
   "devDependencies": {
     "@types/chalk": "^2.2.4",

@@ -139,13 +139,13 @@ program
       type: options.useTypeScript ? "module" : "commonjs",
       scripts: options.useTypeScript
         ? {
-            dev: "tsx src/index.ts",
-            build: "tsc",
-            start: "node dist/index.js",
+            dev: "dixt dev",
+            build: "dixt build",
+            start: "dixt start",
           }
         : {
-            dev: "node src/index.js",
-            start: "node src/index.js",
+            dev: "dixt dev",
+            start: "dixt start",
           },
       dependencies: {
         dixt: "^4.0.0",
@@ -159,7 +159,6 @@ program
         ? {
             "@types/node": "^20.0.0",
             typescript: "^5.0.0",
-            tsx: "^4.0.0",
           }
         : {},
     };

@@ -76,6 +76,41 @@ DIXT_BOT_TOKEN=your_bot_token
 DIXT_DATABASE_URI=mongodb://localhost:27017/mybot  # Optional
 ```
 
+## CLI Commands
+
+Dixt includes a built-in CLI for managing your bot development workflow:
+
+### Development
+
+```bash
+dixt dev
+```
+
+- Auto-detects TypeScript or JavaScript projects
+- Watches for file changes and auto-restarts
+- Uses tsx for TypeScript execution (no build needed)
+
+### Build
+
+```bash
+dixt build
+```
+
+- Compiles TypeScript to JavaScript (skips for JS projects)
+- Uses your project's `tsconfig.json`
+
+### Production
+
+```bash
+dixt start
+```
+
+- Runs the compiled production build
+- For TypeScript: runs `dist/index.js`
+- For JavaScript: runs `src/index.js`
+
+These commands are automatically added to your `package.json` when using `create-dixt-bot`.
+
 ## Plugin System
 
 ### Using Plugins
