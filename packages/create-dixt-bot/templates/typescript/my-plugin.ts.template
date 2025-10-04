@@ -1,0 +1,24 @@
+import { Events, SlashCommandBuilder } from "discord.js";
+import { DixtPlugin, DixtSlashCommandBuilder } from "dixt";
+
+const myPlugin: DixtPlugin = (instance, options) => {
+  instance.client.on(Events.ClientReady, () => {
+    console.log("My plugin is ready!");
+  });
+
+  const pingCommand: DixtSlashCommandBuilder = {
+    data: new SlashCommandBuilder()
+      .setName("ping")
+      .setDescription("Replies with Pong!"),
+    execute: async (interaction) => {
+      await interaction.reply("Pong! 🏓");
+    },
+  };
+
+  return {
+    name: "my-plugin",
+    commands: [pingCommand],
+  };
+};
+
+export default myPlugin;

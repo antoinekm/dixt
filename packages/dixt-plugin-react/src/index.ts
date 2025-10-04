@@ -1,5 +1,5 @@
-import { Events, SlashCommandBuilder } from "discord.js";
-import { DixtPlugin, DixtSlashCommandBuilder, Log, merge } from "dixt";
+import { Events } from "discord.js";
+import { DixtPlugin, Log, merge } from "dixt";
 import dotenv from "dotenv-flow";
 
 import { name } from "../package.json";
@@ -47,23 +47,8 @@ const dixtPluginReact: DixtPlugin = (
     );
   });
 
-  // Example ping command
-  const pingCommand: DixtSlashCommandBuilder = {
-    data: new SlashCommandBuilder()
-      .setName("ping")
-      .setDescription("Replies with Pong!"),
-    execute: async (interaction) => {
-      const latency = Date.now() - interaction.createdTimestamp;
-      await interaction.reply({
-        content: `🏓 Pong! Latency: ${latency}ms`,
-        ephemeral: true,
-      });
-    },
-  };
-
   return {
     name,
-    commands: [pingCommand],
   };
 };
 

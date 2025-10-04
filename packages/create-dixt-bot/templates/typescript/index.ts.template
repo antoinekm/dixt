@@ -1,0 +1,14 @@
+import dixt from "dixt";
+{{#if createExamplePlugin}}
+import myPlugin from "../plugins/my-plugin.js";
+{{/if}}
+
+const bot = new dixt({
+  application: {
+    name: "{{projectName}}",
+  },{{#if createExamplePlugin}}
+  plugins: [myPlugin],{{/if}}
+});
+
+await bot.start();
+console.log("Bot is running!");

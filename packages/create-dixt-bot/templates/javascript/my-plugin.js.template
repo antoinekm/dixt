@@ -1,0 +1,23 @@
+const { Events, SlashCommandBuilder } = require("discord.js");
+
+const myPlugin = (instance, options) => {
+  instance.client.on(Events.ClientReady, () => {
+    console.log("My plugin is ready!");
+  });
+
+  const pingCommand = {
+    data: new SlashCommandBuilder()
+      .setName("ping")
+      .setDescription("Replies with Pong!"),
+    execute: async (interaction) => {
+      await interaction.reply("Pong! 🏓");
+    },
+  };
+
+  return {
+    name: "my-plugin",
+    commands: [pingCommand],
+  };
+};
+
+module.exports = { default: myPlugin };
