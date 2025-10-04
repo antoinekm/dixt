@@ -3,13 +3,13 @@ const dixt = require("dixt").default;
 const myPlugin = require("../plugins/my-plugin.js").default;
 {{/if}}
 
-const bot = new dixt({
-  application: {
-    name: "{{projectName}}",
-  },{{#if createExamplePlugin}}
-  plugins: [myPlugin],{{/if}}
-});
+const bot = new dixt({{#if createExamplePlugin}}{
+  plugins: [myPlugin],
+}{{/if}});
 
-bot.start().then(() => {
+async function main() {
+  await bot.start();
   console.log("Bot is running!");
-});
+}
+
+main();
