@@ -232,6 +232,39 @@ const exampleCommand: DixtSlashCommandBuilder = {
 };
 ```
 
+## Database Integration
+
+Dixt includes optional MongoDB integration via Mongoose.
+
+### Setup
+
+```env
+DIXT_DATABASE_URI=mongodb://localhost:27017/mybot
+```
+
+### Usage in Plugins
+
+```typescript
+import dixt from "dixt";
+
+const myPlugin: DixtPlugin = (instance) => {
+  const UserSchema = new dixt.database.Schema({
+    discordId: String,
+    points: Number,
+  });
+
+  const User = dixt.database.model("User", UserSchema);
+
+  // Use the model
+  instance.client.on(Events.MessageCreate, async (message) => {
+    const user = await User.findOne({ discordId: message.author.id });
+    // ...
+  });
+
+  return { name: "my-plugin" };
+};
+```
+
 ## Available Plugins
 
 Official plugins maintained by the dixt team:
