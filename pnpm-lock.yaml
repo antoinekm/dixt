@@ -192,14 +192,14 @@ importers:
     dependencies:
       node-schedule:
         specifier: ^2.1.1
-        version: 2.1.1
+        version: 2.1.2
     devDependencies:
       '@types/node':
         specifier: ^20.0.0
         version: 20.17.16
       '@types/node-schedule':
         specifier: ^2.1.0
-        version: 2.1.0
+        version: 2.1.8
       discord.js:
         specifier: ^14.9.0
         version: 14.17.3
@@ -321,7 +321,7 @@ importers:
         version: 4.1.0
       node-schedule:
         specifier: ^2.1.1
-        version: 2.1.1
+        version: 2.1.2
       quickchart-js:
         specifier: ^3.1.2
         version: 3.1.2
@@ -331,7 +331,7 @@ importers:
         version: 20.17.16
       '@types/node-schedule':
         specifier: ^2.1.0
-        version: 2.1.0
+        version: 2.1.8
       discord.js:
         specifier: ^14.9.0
         version: 14.17.3
@@ -2144,8 +2144,8 @@ packages:
     resolution: {integrity: sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g==}
     dev: false
 
-  /@types/node-schedule@2.1.0:
-    resolution: {integrity: sha512-NiTwl8YN3v/1YCKrDFSmCTkVxFDylueEqsOFdgF+vPsm+AlyJKGAo5yzX1FiOxPsZiN6/r8gJitYx2EaSuBmmg==}
+  /@types/node-schedule@2.1.8:
+    resolution: {integrity: sha512-k00g6Yj/oUg/CDC+MeLHUzu0+OFxWbIqrFfDiLi6OPKxTujvpv29mHGM8GtKr7B+9Vv92FcK/8mRqi1DK5f3hA==}
     dependencies:
       '@types/node': 20.17.16
     dev: true
@@ -3053,8 +3053,8 @@ packages:
     engines: {node: 18 || 20 || >=22}
     dev: false
 
-  /baseline-browser-mapping@2.11.35:
-    resolution: {integrity: sha512-GNk8KX52CHqeNKGk8+7tZnQab/2k1t/BgrUHPKNdijzpEhF1saPQZHVKb6m5loSAxB39gyrTYw34Qf9CQ3u1qQ==}
+  /baseline-browser-mapping@2.11.36:
+    resolution: {integrity: sha512-AbPFGS4K9S3meMRCLTM0Zas+e9X7b5ygUBOboDT5zevCZt9ByKSbMtKhwyVqW+oL8WemPVsbP7X3rdZcIyOa0w==}
     engines: {node: '>=6.0.0'}
     hasBin: true
     dev: false
@@ -3107,7 +3107,7 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      baseline-browser-mapping: 2.11.35
+      baseline-browser-mapping: 2.11.36
       caniuse-lite: 1.0.30001826
       electron-to-chromium: 1.5.481
       node-releases: 2.0.63
@@ -3345,11 +3345,12 @@ packages:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
     dev: true
 
-  /cron-parser@4.8.1:
-    resolution: {integrity: sha512-jbokKWGcyU4gl6jAfX97E1gDpY12DJ1cLJZmoDzaAln/shZ+S3KBFBuA2Q6WeUN4gJf/8klnV1EfvhA2lK5IRQ==}
+  /cron-parser@4.9.0:
+    resolution: {integrity: sha512-p0SaNjrHOnQeR8/VnfGbmg9te2kfyYSQ7Sc/j/6DtPL3JQvKxmjO9TSjNFpujqV3vEYYBvNNvXSxzyksBWAx1Q==}
     engines: {node: '>=12.0.0'}
+    deprecated: v4 is no longer maintained, upgrade to v5
     dependencies:
-      luxon: 3.3.0
+      luxon: 3.7.2
     dev: false
 
   /cross-fetch@3.1.5:
@@ -6038,8 +6039,8 @@ packages:
       yallist: 3.1.1
     dev: false
 
-  /luxon@3.3.0:
-    resolution: {integrity: sha512-An0UCfG/rSiqtAIiBPO0Y9/zAnHUZxAMiCpTd5h2smgsj7GGmcenvrvww2cqNA8/4A5ZrD1gJpHN2mIHZQF+Mg==}
+  /luxon@3.7.2:
+    resolution: {integrity: sha512-vtEhXh/gNjI9Yg1u4jX/0YVPMvxzHuGgCm6tC5kZyb08yjGWGnqAjGJvcXbqQR2P3MyMEFnRbpcdFS6PBcLqew==}
     engines: {node: '>=12'}
     dev: false
 
@@ -7057,11 +7058,11 @@ packages:
     engines: {node: '>=18'}
     dev: false
 
-  /node-schedule@2.1.1:
-    resolution: {integrity: sha512-OXdegQq03OmXEjt2hZP33W2YPs/E5BcFQks46+G2gAxs4gHOIVD1u7EqlYLYSKsaIpyKCK9Gbk0ta1/gjRSMRQ==}
+  /node-schedule@2.1.2:
+    resolution: {integrity: sha512-JuKopr93W+WP+TaK5yoHJGpzPF9fpkH8Vcc9CXGE993BNeRKsb3L4Wy6FzL0VxkEa6U+8M4Ni0HEm9rMMnwurg==}
     engines: {node: '>=6'}
     dependencies:
-      cron-parser: 4.8.1
+      cron-parser: 4.9.0
       long-timeout: 0.1.1
       sorted-array-functions: 1.3.0
     dev: false
